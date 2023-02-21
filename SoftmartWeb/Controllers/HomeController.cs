@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SoftmartWeb.Models;
 using System.Diagnostics;
@@ -8,14 +9,24 @@ namespace SoftmartWeb.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        private readonly UserManager<IdentityUser> _userManager;
+        public HomeController(ILogger<HomeController> logger, UserManager<IdentityUser> userManager)
         {
             _logger = logger;
+            _userManager = userManager;
         }
 
-        public IActionResult Index()
+        public async Task< IActionResult> Index()
         {
+            var usuario = await _userManager.GetUserAsync(User);
+            if (usuario == null)
+            {
+                ViewData["Autenticacion2FactoresActiva"] = false;
+            }
+            else {
+                ViewData["Autenticacion2FactoresActiva"] = usuario.TwoFactorEnabled;
+            }
+
             return View();
         }
 

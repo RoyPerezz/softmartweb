@@ -10,28 +10,51 @@ using System.Text.Encodings.Web;
 
 namespace SoftmartWeb.Controllers
 {
+
+    [Authorize]
     public class CuentasController : Controller
     {
 
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IEmailSender _emailSender;
         public readonly UrlEncoder _urlEncoder;
 
-        public CuentasController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IEmailSender emailSender, UrlEncoder urlEncoder)
+        public CuentasController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IEmailSender emailSender, UrlEncoder urlEncoder, 
+            RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _urlEncoder = urlEncoder;
+            _roleManager = roleManager;
         }
+        [HttpGet]
+
+        [AllowAnonymous]
         public IActionResult Index()
         {
             return View();
         }
         [HttpGet]
+    
+        [AllowAnonymous]
         public async Task<IActionResult>Registro(string returnurl= null)
         {
+            //Para la creacion de los roles
+            if (!await _roleManager.RoleExistsAsync("Administrador"))//si el role no existe lo crea
+            {
+                //Creacion del rol administrador
+                await _roleManager.CreateAsync(new IdentityRole("Administrador"));
+            }
+
+            if (!await _roleManager.RoleExistsAsync("Registrado"))//si el role no existe lo crea
+            {
+                //Creacion del rol registrado
+                await _roleManager.CreateAsync(new IdentityRole("Registrado"));
+            }
+
             ViewData["ReturnUrl"] = returnurl;
             RegistroViewModel registroVM = new RegistroViewModel();
             return View(registroVM);
@@ -39,6 +62,8 @@ namespace SoftmartWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+
+        [AllowAnonymous]
         public async Task<IActionResult> Registro(RegistroViewModel rgViewModel,string returnurl=null)
         {
             ViewData["ReturnUrl"] = returnurl;
@@ -64,6 +89,10 @@ namespace SoftmartWeb.Controllers
                 if (resultado.Succeeded)
                 {
 
+                    //Asignar un role al usuario registrado
+                    await _userManager.AddToRoleAsync(usuario,"Registrado");
+
+
                     //implementacion de comfirmacion de email en el registro
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(usuario); //para generar el token de confirmacion
                     var urlRetorno = Url.Action("ConfirmarEmail", "Cuentas", new { userId = usuario.Id, code = code }, protocol: HttpContext.Request.Scheme);
@@ -81,6 +110,7 @@ namespace SoftmartWeb.Controllers
         }
 
         //Manejador de Errores
+        [AllowAnonymous]
         private void ValidarErrores(IdentityResult resultado)
         {
             foreach (var error in resultado.Errors)
@@ -91,6 +121,7 @@ namespace SoftmartWeb.Controllers
 
         //Método mostrar formulario de acceso
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Acceso(string returnurl=null)
         {
             ViewData["ReturnUrl"] = returnurl;
@@ -99,6 +130,7 @@ namespace SoftmartWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<IActionResult> Acceso(AccesoViewModel accViewModel,string returnurl=null)
            
         {
@@ -152,6 +184,7 @@ namespace SoftmartWeb.Controllers
         //METODO OLVIDO DE CONTRASEña
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult OlvidoPassword()
         {
 
@@ -162,6 +195,7 @@ namespace SoftmartWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<IActionResult> OlvidoPassword(OlvidoPasswordViewModel opViewModel)
         {
             if (ModelState.IsValid)
@@ -200,6 +234,7 @@ namespace SoftmartWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(RecuperaPasswordViewModel rpViewModel )
         {
             if (ModelState.IsValid)
@@ -232,7 +267,7 @@ namespace SoftmartWeb.Controllers
 
         //Metodo para confirmacion de email en el registro
         [HttpGet]
-
+        [AllowAnonymous]
         public async Task<IActionResult> ConfirmarEmail(string userId, string code)
         {
 
@@ -358,6 +393,20 @@ namespace SoftmartWeb.Controllers
             return View(adfModel);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> EliminarAutenticador()
+        {
+         
+
+            var usuario = await _userManager.GetUserAsync(User);
+            await _userManager.ResetAuthenticatorKeyAsync(usuario);
+            await _userManager.SetTwoFactorEnabledAsync(usuario,false); //quita la autenticacion de 2 factores
+            
+
+            
+            return RedirectToAction(nameof(Index),"Home");
+        }
+
         [HttpPost]
         public async Task<IActionResult> ActivarAutenticador(AutenticacionDosFactoresViewModel adfViewModel)
         {
@@ -386,6 +435,7 @@ namespace SoftmartWeb.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> VerificarCodigoAutenticador(bool recordarDatos,string returnurl = null)
         {
 

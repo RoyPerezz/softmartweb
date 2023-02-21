@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "jhtlCUvHPcF2TJ6P+/1/mw4lVJv/6EqoJOL/QFywqUdUm3gOUl9Kfxv2j9KgMTdo2DN7GHY+iQK7yRU+UEgM0g==",
+  "dgSpecHash": "7cvyYZACfgk7fp2UQfojX2DFwUMQEOFTyo6rd1WvVvhg9ZccbWeruS0OGsRgKn3UXj3fHzSxoflp1jPFJvRJMw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Roy Pérez\\source\\repos\\SoftmartWeb\\SoftmartWeb\\SoftmartWeb.csproj",
+  "projectFilePath": "C:\\Users\\Roy Pérez\\Documents\\GitHub\\softmartweb\\SoftmartWeb\\SoftmartWeb.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Roy Pérez\\.nuget\\packages\\humanizer.core\\2.8.26\\humanizer.core.2.8.26.nupkg.sha512",
     "C:\\Users\\Roy Pérez\\.nuget\\packages\\mailjet.api\\1.2.3\\mailjet.api.1.2.3.nupkg.sha512",
